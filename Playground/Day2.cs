@@ -40,8 +40,67 @@ namespace Playground;
 
 internal sealed class Day2
 {
-    internal int CalculateGameIDsSum()
+    private const int _maxRedCubes = 12;
+    private const int _maxGreenCubes = 13;
+    private const int _maxBlueCubes = 14;
+
+    internal int CalculateGameIDsSumPart1(string text)
     {
-        return 0;
+        List<Game> games = [];
+        string[] lines = text.Split('\n');
+
+        foreach (string line in lines)
+        {
+            games.Add(Game.ParseGame(line));
+        }
+
+        var result = games
+            .Where(g => g.Sets.All(s => s is { Red: <= _maxRedCubes, Green: <= _maxGreenCubes, Blue: <= _maxBlueCubes }))
+            .Select(g => g.Id)
+            .Sum();
+
+        return result;
     }
 }
+
+internal sealed class Game
+{
+    private readonly List<Set> _sets = [];
+
+    internal int Id { get; }
+    internal IReadOnlyList<Set> Sets => _sets.AsReadOnly();
+
+    private Game(int id, List<Set> sets)
+    {
+        Id = id;
+        _sets = sets;
+    }
+
+    internal static Game ParseGame(string input)
+    {
+        List<Set> sets = [];
+
+        var gameParts = input.Split(':');
+        var gameId = gameParts[0].AsSpan()[gameParts[0].IndexOf(' ')..].Trim();
+        var subsets = gameParts[1].Split(";", StringSplitOptions.TrimEntries);
+
+        foreach (var subset in subsets)
+        {
+            var coloursAndValues = subset
+                .Split(",", StringSplitOptions.TrimEntries)
+                .Select(s => s.Split(" ", StringSplitOptions.TrimEntries))
+                .Select((s,x) => (s[1], int.Parse(s[0])))
+                .ToDictionary();
+
+            _ = coloursAndValues.TryGetValue("red", out var red);
+            _ = coloursAndValues.TryGetValue("green", out var green);
+            _ = coloursAndValues.TryGetValue("blue", out var blue);
+
+            sets.Add(new Set(red, green, blue));
+        }
+
+        return new(int.Parse(gameId), sets);
+    }
+}
+
+internal sealed record Set(int Red, int Green, int Blue);
