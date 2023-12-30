@@ -1,44 +1,87 @@
-﻿/*
-* --- Day 3: Gear Ratios ---
-* You and the Elf eventually reach a gondola lift station; he says the gondola lift will take you up to the water source, but this is as far as he can bring you. You go inside.
-* 
-* It doesn't take long to find the gondolas, but there seems to be a problem: they're not moving.
-* 
-* "Aaah!"
-* 
-* You turn around to see a slightly-greasy Elf with a wrench and a look of surprise.
-* "Sorry, I wasn't expecting anyone! The gondola lift isn't working right now; it'll still be a while before I can fix it." You offer to help.
-* 
-* The engineer explains that an engine part seems to be missing from the engine, but nobody can figure out which one.
-* If you can add up all the part numbers in the engine schematic, it should be easy to work out which part is missing.
-* 
-* The engine schematic (your puzzle input) consists of a visual representation of the engine.
-* There are lots of numbers and symbols you don't really understand, but apparently any number adjacent to a symbol, even diagonally, is a "part number" and should be included in your sum.
-* (Periods (.) do not count as a symbol.)
-* 
-* Here is an example engine schematic:
-*
-* 467..114..
-* ...*......
-* ..35..633.
-* ......#...
-* 617*......
-* .....+.58.
-* ..592.....
-* ......755.
-* ...$.*....
-* .664.598..
-* 
-* In this schematic, two numbers are not part numbers because they are not adjacent to a symbol: 114 (top right) and 58 (middle right). 
-* Every other number is adjacent to a symbol and so is a part number; their sum is 4361.
-* 
-* Of course, the actual engine schematic is much larger. What is the sum of all of the part numbers in the engine schematic?
-* 
-* https://adventofcode.com/2023/day/3
-*/
+﻿using System.Text.RegularExpressions;
 
 namespace Playground;
 
-internal sealed class Day3
+internal sealed partial class Day3
 {
+    private readonly Regex _numbersRegex = NumbersRegex();
+    private readonly Regex _charsRegex = CharsRegex();
+    private readonly (int, int)[] _directions = [(-1, 0), (1, 0), (0, -1), (0, 1)];
+
+    [GeneratedRegex(@"\d+", RegexOptions.Compiled)]
+    private static partial Regex NumbersRegex();
+
+    [GeneratedRegex(@"^\d+", RegexOptions.Compiled)]
+    private static partial Regex CharsRegex();
+
+    internal int CalculatePartNumbers(string[] lines)
+    {
+        var sum = 0;
+
+        for (int i = 0; i < lines.Length; i++)
+        {
+            Dictionary<int, char> previousLineSymbols = [];
+            Dictionary<int, char> nextLineSymbols = [];
+
+            var line = lines[i];
+            var numberMatches = _numbersRegex.Matches(line);
+            var currentLineSymbols = GetSymbolsInLine(line);
+
+            if (i > 0)
+            {
+                previousLineSymbols = GetSymbolsInLine(lines[i - 1]);
+            }
+
+            if (i < lines.Length - 1)
+            {
+                nextLineSymbols = GetSymbolsInLine(lines[i + 1]);
+            }
+
+            sum += numberMatches
+                .Where(m => 
+                    IsSymbolAdjacent(m, currentLineSymbols) || 
+                    IsSymbolAdjacent(m, previousLineSymbols) || 
+                    IsSymbolAdjacent(m, nextLineSymbols))
+                .Sum(m => int.Parse(m.Value));
+        }
+
+
+        return sum;
+
+        static Dictionary<int, char> GetSymbolsInLine(ReadOnlySpan<char> input)
+        {
+            Dictionary<int, char> symbols = [];
+            for (int i = 0; i < input.Length; i++)
+            {
+                var @char = input[i];
+                if (!char.IsDigit(@char) && @char != '.')
+                {
+                    symbols[i] = @char;
+                }
+            }
+
+            return symbols;
+        }
+
+        bool IsSymbolAdjacent(Match match, IReadOnlyDictionary<int, char> symbols)
+        {
+            var min = match.Index;
+            var max = min + match.Length - 1;
+            return symbols.Keys.Any(k => k >= min - 1 && k <= max + 1);
+        }
+    }
+
+    internal int Calculate(string[] input)
+    {
+        var sum = 0;
+
+        return sum;
+
+        int CalculateRatio(IReadOnlyList<string> rows, int x, int y, int width, int height)
+        {
+            List<int> adjacentNumbers = [];
+
+            return adjacentNumbers.First();
+        }
+    }
 }
