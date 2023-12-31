@@ -38,9 +38,9 @@ internal sealed partial class Day3
             }
 
             sum += numberMatches
-                .Where(m => 
-                    IsSymbolAdjacent(m, currentLineSymbols) || 
-                    IsSymbolAdjacent(m, previousLineSymbols) || 
+                .Where(m =>
+                    IsSymbolAdjacent(m, currentLineSymbols) ||
+                    IsSymbolAdjacent(m, previousLineSymbols) ||
                     IsSymbolAdjacent(m, nextLineSymbols))
                 .Sum(m => int.Parse(m.Value));
         }
@@ -71,17 +71,102 @@ internal sealed partial class Day3
         }
     }
 
-    internal int Calculate(string[] input)
+    internal int CalculateGearRatios(string[] input)
     {
+        var Directions = new (int, int)[] { (0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (-1, 1), (1, -1), (-1, -1) };
         var sum = 0;
+        var width = input[0].Length;
+        var height = input.Length;
+        var map = new char[width, height];
+
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                map[i, j] = input[j][i];
+            }
+        }
+
+        var asterisks = FindAsterisks();
+        sum = CalculateTotal(asterisks);
 
         return sum;
 
-        int CalculateRatio(IReadOnlyList<string> rows, int x, int y, int width, int height)
+        Dictionary<(int, int), List<int>> FindAsterisks()
         {
-            List<int> adjacentNumbers = [];
+            var currentNumber = 0;
+            var asterisks = new Dictionary<(int, int), List<int>>();
+            var neighboringAsterisks = new HashSet<(int, int)>();
 
-            return adjacentNumbers.First();
+            for (var y = 0; y < height; y++)
+            {
+                for (var x = 0; x < width; x++)
+                {
+                    ProcessCharacter(x, y, ref currentNumber, neighboringAsterisks, asterisks);
+                }
+                CheckCurrentNumber(ref currentNumber, neighboringAsterisks, asterisks);
+            }
+
+            return asterisks;
+        }
+
+        void CheckCurrentNumber(ref int currentNumber, HashSet<(int, int)> neighboringAsterisks, Dictionary<(int, int), List<int>> asterisks)
+        {
+            if (currentNumber != 0 && neighboringAsterisks.Count > 0)
+            {
+                foreach (var point in neighboringAsterisks)
+                {
+                    if (!asterisks.TryGetValue(point, out List<int>? value))
+                    {
+                        value = ([]);
+                        asterisks[point] = value;
+                    }
+
+                    value.Add(currentNumber);
+                }
+            }
+            currentNumber = 0;
+            neighboringAsterisks.Clear();
+        }
+
+        bool IsWithinBounds(int x, int y) => x >= 0 && x < width && y >= 0 && y < height;
+
+        int CalculateTotal(Dictionary<(int, int), List<int>> asterisks)
+        {
+            var total = 0;
+            foreach (var numbers in asterisks.Values.Where(numbers => numbers.Count == 2))
+            {
+                total += numbers[0] * numbers[1];
+            }
+
+            return total;
+        }
+
+        void CheckForAsterisks(int x, int y, HashSet<(int, int)> neighboringAsterisks)
+        {
+            foreach (var direction in Directions)
+            {
+                var neighborX = x + direction.Item1;
+                var neighborY = y + direction.Item2;
+                if (IsWithinBounds(neighborX, neighborY) && map![neighborX, neighborY] == '*')
+                {
+                    neighboringAsterisks.Add((neighborX, neighborY));
+                }
+            }
+        }
+
+        void ProcessCharacter(int x, int y, ref int currentNumber, HashSet<(int, int)> neighboringAsterisks, Dictionary<(int, int), List<int>> asterisks)
+        {
+            var character = map![x, y];
+            if (char.IsDigit(character))
+            {
+                currentNumber = currentNumber * 10 + (character - '0');
+                CheckForAsterisks(x, y, neighboringAsterisks);
+            }
+            else
+            {
+                CheckCurrentNumber(ref currentNumber, neighboringAsterisks, asterisks);
+            }
         }
     }
 }
