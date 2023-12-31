@@ -361,3 +361,13 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/Playground/Inputs/Day_1.txt
+/Playground/Inputs/Day_10.txt
+/Playground/Inputs/Day_2.txt
+/Playground/Inputs/Day_3.txt
+/Playground/Inputs/Day_4.txt
+/Playground/Inputs/Day_5.txt
+/Playground/Inputs/Day_6.txt
+/Playground/Inputs/Day_7.txt
+/Playground/Inputs/Day_8.txt
+/Playground/Inputs/Day_9.txt
